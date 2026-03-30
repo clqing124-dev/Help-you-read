@@ -5,3 +5,4 @@ python-docx
 ebooklib
 beautifulsoup4
 requests
+gunicorn
