@@ -1,0 +1,7 @@
+flask
+flask-cors
+PyPDF2
+python-docx
+ebooklib
+beautifulsoup4
+requests
