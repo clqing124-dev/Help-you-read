@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>帮你读书 - Qing阅读分析法 | AI智能精读</title>
+    <title>帮你读书 - 渐进阅读法 | AI智能精读</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
         rel="stylesheet">
@@ -82,6 +82,14 @@
             border-radius: 40px;
             font-size: 0.85rem;
             margin-top: 0.5rem;
+        }
+
+        .intro {
+            max-width: 700px;
+            margin: 1.25rem auto 0;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.9;
         }
 
         .upload-card {
@@ -306,8 +314,8 @@
                 <button class="lang-btn" data-lang="en">EN</button>
             </div>
             <h1 data-i18n="heroTitle">📖 帮你读书</h1>
-            <div class="badge" data-i18n="badge">⚡ 基于 DeepSeek AI + Qing阅读分析法 · 智能精读引擎</div>
-            <p style="margin-top: 0.75rem; color: #475569;" data-i18n="heroSub">上传书籍文档，AI 将严格按照 Qing 阅读分析法生成完整深度报告</p>
+            <div class="badge" data-i18n="badge">⚡ 基于 DeepSeek AI + 渐进阅读法 · 智能精读引擎</div>
+            <div class="intro" data-i18n="intro">书海千千万，哪本是你该读的呢？你是否拿不定主意，是否该花时间去完整阅读这本书，又或者你只是想知道这本书的核心内容？把书喂给我吧，基于《如何阅读一本书》中的四层阅读层次提取的阅读方法，我将给你一份详尽的阅读报告，看完你就能立刻做出决断了。</div>
         </div>
 
         <div class="upload-card">
@@ -327,11 +335,11 @@
 
         <div id="reportContainer" class="report-container" style="display: none;">
             <div class="report-header">
-                <h2><i class="fas fa-book-open"></i> 《<span id="bookTitle">未知书籍</span>》 · <span data-i18n="reportHeader">Qing阅读分析报告</span></h2>
+                <h2><i class="fas fa-book-open"></i> 《<span id="bookTitle">未知书籍</span>》 · <span data-i18n="reportHeader">渐进阅读报告</span></h2>
             </div>
             <div id="analysisContent"></div>
             <div class="footer">
-                <i class="fas fa-brain"></i> <span data-i18n="footer">分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）</span>
+                <i class="fas fa-brain"></i> <span data-i18n="footer">分析由 DeepSeek AI 驱动，严格遵循 渐进阅读法（检视阅读→分析阅读→评论）</span>
             </div>
         </div>
     </div>
@@ -339,19 +347,19 @@
     <script>
         const I18N = {
             zh: {
-                pageTitle: '帮你读书 - Qing阅读分析法 | AI智能精读',
+                pageTitle: '帮你读书 - 渐进阅读法 | AI智能精读',
                 heroTitle: '📖 帮你读书',
-                badge: '⚡ 基于 DeepSeek AI + Qing阅读分析法 · 智能精读引擎',
-                heroSub: '上传书籍文档，AI 将严格按照 Qing 阅读分析法生成完整深度报告',
+                badge: '⚡ 基于 DeepSeek AI + 渐进阅读法 · 智能精读引擎',
+                intro: '书海千千万，哪本是你该读的呢？你是否拿不定主意，是否该花时间去完整阅读这本书，又或者你只是想知道这本书的核心内容？把书喂给我吧，基于《如何阅读一本书》中的四层阅读层次提取的阅读方法，我将给你一份详尽的阅读报告，看完你就能立刻做出决断了。',
                 uploadPrompt: '点击或拖拽上传书籍文档',
                 formats: '支持 EPUB、文字版 PDF、TXT、Word、MOBI',
                 formatHint: '最大 50MB，AI 将深度分析书籍核心内容',
                 analyzeBtn: '开始分析',
                 resetBtn: '重置',
-                reportHeader: 'Qing阅读分析报告',
-                loading1: '🤖 AI 正在深度分析书籍内容，严格按照 Qing 阅读分析法生成报告...',
+                reportHeader: '渐进阅读报告',
+                loading1: '🤖 AI 正在深度分析书籍内容，严格按照 渐进阅读法生成报告...',
                 loading2: '两段式分析（先挑关键章节、再生成报告），约需 1-3 分钟，请耐心等待',
-                footer: '分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）',
+                footer: '分析由 DeepSeek AI 驱动，严格遵循 渐进阅读法（检视阅读→分析阅读→评论）',
                 needFile: '请先选择一本书籍文件',
                 badFormat: '暂支持 EPUB、文字版 PDF、TXT、Word 或 MOBI 文件',
                 selected: '已选择',
@@ -359,19 +367,19 @@
                 requestFail: '请求失败'
             },
             en: {
-                pageTitle: 'Help You Read - Qing Reading Analysis | AI Smart Reading',
+                pageTitle: 'Help You Read - Progressive Reading | AI Smart Reading',
                 heroTitle: '📖 Help You Read',
-                badge: '⚡ Powered by DeepSeek AI + Qing Reading Analysis',
-                heroSub: 'Upload a book and AI generates a full in-depth report following the Qing Reading Analysis method',
+                badge: '⚡ Powered by DeepSeek AI + Progressive Reading',
+                intro: 'With thousands of books out there, which one should you actually read? Hesitating over whether to invest the time reading it cover to cover, or just want to grasp its core ideas? Feed the book to me — based on the reading method distilled from the four levels of reading in "How to Read a Book", I\'ll give you a detailed reading report so you can decide right away.',
                 uploadPrompt: 'Click or drag to upload a book',
                 formats: 'Supports EPUB, text PDF, TXT, Word, MOBI',
                 formatHint: 'Up to 50MB, AI analyzes the core content of the book',
                 analyzeBtn: 'Analyze',
                 resetBtn: 'Reset',
-                reportHeader: 'Qing Reading Analysis Report',
-                loading1: '🤖 AI is analyzing the book following the Qing Reading Analysis method...',
+                reportHeader: 'Progressive Reading Report',
+                loading1: '🤖 AI is analyzing the book following the Progressive Reading method...',
                 loading2: 'Two-pass analysis (pick key chapters first, then generate report), takes 1-3 min',
-                footer: 'Driven by DeepSeek AI, following the Qing Reading Analysis (Inspectional → Analytical → Critical)',
+                footer: 'Driven by DeepSeek AI, following the Progressive Reading (Inspectional → Analytical → Critical)',
                 needFile: 'Please select a book file first',
                 badFormat: 'Please upload EPUB, text PDF, TXT, Word or MOBI',
                 selected: 'Selected',
