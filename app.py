@@ -51,7 +51,7 @@ def analyze_book():
             'success': True,
             'book_title': book.get('title') or os.path.splitext(file.filename)[0],
             'analysis': report,
-            'selected_chapters': [t for t, _ in sel],
+            'selected_chapters': [ch.get('title', '') for ch in (sel.get('selected_chapters') or [])],
         })
     except Exception as e:
         return jsonify({'error': f'分析失败：{e}'}), 500
