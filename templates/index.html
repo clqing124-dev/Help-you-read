@@ -184,6 +184,18 @@
             margin-bottom: 1.5rem;
         }
 
+        .export-btns {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+        }
+
         .loading {
             text-align: center;
             padding: 2rem;
@@ -303,6 +315,26 @@
                 margin-bottom: 1rem;
             }
         }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #reportContainer, #reportContainer * {
+                visibility: visible;
+            }
+            #reportContainer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+            }
+            .lang-toggle, .upload-card, .export-btns {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -336,6 +368,10 @@
         <div id="reportContainer" class="report-container" style="display: none;">
             <div class="report-header">
                 <h2><i class="fas fa-book-open"></i> 《<span id="bookTitle">未知书籍</span>》 · <span data-i18n="reportHeader">渐进阅读报告</span></h2>
+                <div class="export-btns">
+                    <button class="btn btn-outline btn-sm" id="exportDocxBtn"><i class="fas fa-file-word"></i> <span data-i18n="exportDocx">导出 DOCX</span></button>
+                    <button class="btn btn-outline btn-sm" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> <span data-i18n="exportPdf">导出 PDF</span></button>
+                </div>
             </div>
             <div id="analysisContent"></div>
             <div class="footer">
@@ -364,7 +400,9 @@
                 badFormat: '暂支持 EPUB、文字版 PDF、TXT、Word 或 MOBI 文件',
                 selected: '已选择',
                 analyzeFail: '分析失败',
-                requestFail: '请求失败'
+                requestFail: '请求失败',
+                exportDocx: '导出 DOCX',
+                exportPdf: '导出 PDF'
             },
             en: {
                 pageTitle: 'Help You Read - Progressive Reading | AI Smart Reading',
@@ -384,12 +422,15 @@
                 badFormat: 'Please upload EPUB, text PDF, TXT, Word or MOBI',
                 selected: 'Selected',
                 analyzeFail: 'Analysis failed',
-                requestFail: 'Request failed'
+                requestFail: 'Request failed',
+                exportDocx: 'Export DOCX',
+                exportPdf: 'Export PDF'
             }
         };
 
         let currentLang = localStorage.getItem('lang') || 'zh';
         let selectedFile = null;
+        let currentMarkdown = '';
 
         function t(key) {
             return (I18N[currentLang] && I18N[currentLang][key]) || key;
@@ -490,6 +531,7 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    currentMarkdown = result.analysis;
                     const htmlContent = marked.parse(result.analysis);
                     analysisContentDiv.innerHTML = `<div class="analysis-content">${htmlContent}</div>`;
                 } else {
@@ -499,6 +541,28 @@
                 analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${t('requestFail')}: ${error.message}</div>`;
             }
         });
+
+        const exportDocxBtn = document.getElementById('exportDocxBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+
+        exportDocxBtn.addEventListener('click', async () => {
+            if (!currentMarkdown) return;
+            const res = await fetch('/export-docx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ markdown: currentMarkdown, title: bookTitleSpan.innerText })
+            });
+            if (!res.ok) { alert('导出失败'); return; }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = bookTitleSpan.innerText + '.docx';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        exportPdfBtn.addEventListener('click', () => window.print());
 
         applyLang();
     </script>
