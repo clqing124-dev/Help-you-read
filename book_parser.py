@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-book_parser.py —— 薄解析器：把 EPUB / 文字版 PDF 抽成 Qing 阅读分析法两段式所需的结构。
+book_parser.py —— 薄解析器：把 EPUB / 文字版 PDF 抽成 渐进阅读法两段式所需的结构。
 
-输出结构（与 Qing阅读分析法-两段式调用规格.md §1 一致）：
+输出结构（与 渐进阅读法-两段式调用规格.md §1 一致）：
 {
   "title":    str,
   "author":   str,
@@ -551,7 +551,7 @@ def parse_book(path):
 # ---------------------------------------------------------------------------
 
 def main():
-    ap = argparse.ArgumentParser(description='把书抽成 Qing 两段式所需的结构化数据')
+    ap = argparse.ArgumentParser(description='把书抽成渐进阅读法两段式所需的结构化数据')
     ap.add_argument('book', help='书文件路径（.epub 或文字版 .pdf）')
     ap.add_argument('-o', '--out', help='另存 JSON 的路径')
     args = ap.parse_args()
