@@ -9,6 +9,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -204,6 +205,34 @@
             font-size: 0.85rem;
         }
 
+        .analysis-content table {
+            border-collapse: collapse;
+            margin: 1rem 0;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .analysis-content th,
+        .analysis-content td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .analysis-content th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .analysis-content blockquote {
+            border-left: 3px solid #93c5fd;
+            margin: 0.75rem 0;
+            padding: 0.5rem 1rem;
+            background: #f8fafc;
+            color: #475569;
+        }
+
         .error-message {
             background: #fef2f2;
             color: #dc2626;
@@ -244,8 +273,8 @@
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                 <p><strong>点击或拖拽上传书籍文档</strong></p>
-                <p style="font-size: 0.85rem; color: #64748b;">支持 PDF、TXT、Word、EPUB、MOBI 等格式</p>
-                <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.epub,.mobi" style="display: none;">
+                <p style="font-size: 0.85rem; color: #64748b;">支持 EPUB、文字版 PDF（带书签）</p>
+                <input type="file" id="fileInput" accept=".epub,.pdf" style="display: none;">
                 <div class="file-info" id="fileNameDisplay"></div>
                 <div class="format-hint"><i class="fas fa-info-circle"></i> 最大 50MB，AI 将深度分析书籍核心内容</div>
             </div>
@@ -261,7 +290,7 @@
             </div>
             <div id="analysisContent"></div>
             <div class="footer">
-                <i class="fas fa-brain"></i> 分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论→主题阅读）
+                <i class="fas fa-brain"></i> 分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）
             </div>
         </div>
     </div>
@@ -299,10 +328,10 @@
         });
 
         function handleFile(file) {
-            const validExtensions = ['.pdf', '.txt', '.docx', '.epub', '.mobi'];
+            const validExtensions = ['.epub', '.pdf'];
             const ext = '.' + file.name.split('.').pop().toLowerCase();
             if (!validExtensions.includes(ext)) {
-                alert('不支持的文件格式，请上传 PDF、TXT、Word、EPUB 或 MOBI 文件');
+                alert('暂支持 EPUB 或文字版 PDF（带书签）。TXT/Word/MOBI/扫描版 PDF 请先转换');
                 return;
             }
             selectedFile = file;
@@ -327,7 +356,7 @@
             <div class="loading">
                 <div class="loading-spinner"></div>
                 <p>🤖 AI 正在深度分析书籍内容，严格按照 Qing 阅读分析法生成报告...</p>
-                <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">首次分析可能需要 30-60 秒，请耐心等待</p>
+                <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">两段式分析（先挑关键章节、再生成报告），约需 1-3 分钟，请耐心等待</p>
             </div>
         `;
             bookTitleSpan.innerText = selectedFile.name.replace(/\.[^/.]+$/, '');
@@ -344,7 +373,7 @@
 
                 if (result.success) {
                     // 将 Markdown 渲染为 HTML
-                    const htmlContent = markedParse(result.analysis);
+                    const htmlContent = marked.parse(result.analysis);
                     analysisContentDiv.innerHTML = `<div class="analysis-content">${htmlContent}</div>`;
                 } else {
                     analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> 分析失败: ${result.error}</div>`;
@@ -354,37 +383,7 @@
             }
         });
 
-        // 简单的 Markdown 解析（支持标题、列表、粗体等）
-        function markedParse(md) {
-            let html = md;
-            // 标题
-            html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-            html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-            html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-            // 粗体
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // 斜体
-            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            // 无序列表
-            html = html.replace(/^\* (.*$)/gm, '<li>$1</li>');
-            html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
-            // 有序列表
-            html = html.replace(/^\d+\. (.*$)/gm, '<li>$1</li>');
-            // 包裹列表
-            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-            // 段落
-            html = html.replace(/\n\n/g, '</p><p>');
-            html = '<p>' + html + '</p>';
-            // 清理空标签
-            html = html.replace(/<p><\/p>/g, '');
-            html = html.replace(/<p>\s*<h/g, '<h');
-            html = html.replace(/<\/h\d>\s*<\/p>/g, '</h>');
-            // 代码块
-            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-            // 行内代码
-            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-            return html;
-        }
+        // Markdown 渲染由 marked 库处理（支持标题/列表/表格/引用块）
     </script>
 </body>
 
