@@ -13,9 +13,8 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB 限制
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# 支持格式：EPUB + 文字版 PDF（有书签、有文字层）。
-# 扫描版 PDF / TXT / DOCX / MOBI 需先转换或 OCR，暂不直接支持。
-ALLOWED_EXTENSIONS = {'.epub', '.pdf'}
+# 支持格式：EPUB / 文字版 PDF / TXT / DOCX / MOBI（mobi 依赖服务器装有 calibre）
+ALLOWED_EXTENSIONS = {'.epub', '.pdf', '.txt', '.docx', '.mobi'}
 
 
 @app.route('/')
@@ -39,7 +38,7 @@ def analyze_book():
 
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
-        return jsonify({'error': f'暂不支持 {ext} 格式，请上传 EPUB 或文字版 PDF（扫描版 PDF 需先 OCR）'}), 400
+        return jsonify({'error': f'暂不支持 {ext} 格式，请上传 EPUB、PDF、TXT、DOCX 或 MOBI'}), 400
 
     temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4().hex}{ext}")
     file.save(temp_path)

@@ -33,6 +33,37 @@
         .hero {
             text-align: center;
             margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 0.25rem;
+            background: #e9eef3;
+            padding: 0.25rem;
+            border-radius: 40px;
+        }
+
+        .lang-btn {
+            border: none;
+            background: transparent;
+            padding: 0.35rem 0.9rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1e3c72;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
         .hero h1 {
@@ -257,6 +288,12 @@
             .report-container {
                 padding: 1.2rem;
             }
+
+            .lang-toggle {
+                position: static;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
@@ -264,38 +301,113 @@
 <body>
     <div class="container">
         <div class="hero">
-            <h1>📖 帮你读书</h1>
-            <div class="badge">⚡ 基于 DeepSeek AI + Qing阅读分析法 · 智能精读引擎</div>
-            <p style="margin-top: 0.75rem; color: #475569;">上传书籍文档，AI 将严格按照 Qing 阅读分析法生成完整深度报告</p>
+            <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="zh">中文</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+            <h1 data-i18n="heroTitle">📖 帮你读书</h1>
+            <div class="badge" data-i18n="badge">⚡ 基于 DeepSeek AI + Qing阅读分析法 · 智能精读引擎</div>
+            <p style="margin-top: 0.75rem; color: #475569;" data-i18n="heroSub">上传书籍文档，AI 将严格按照 Qing 阅读分析法生成完整深度报告</p>
         </div>
 
         <div class="upload-card">
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                <p><strong>点击或拖拽上传书籍文档</strong></p>
-                <p style="font-size: 0.85rem; color: #64748b;">支持 EPUB、文字版 PDF（带书签）</p>
-                <input type="file" id="fileInput" accept=".epub,.pdf" style="display: none;">
+                <p><strong data-i18n="uploadPrompt">点击或拖拽上传书籍文档</strong></p>
+                <p style="font-size: 0.85rem; color: #64748b;" data-i18n="formats">支持 EPUB、文字版 PDF、TXT、Word、MOBI</p>
+                <input type="file" id="fileInput" accept=".epub,.pdf,.txt,.docx,.mobi" style="display: none;">
                 <div class="file-info" id="fileNameDisplay"></div>
-                <div class="format-hint"><i class="fas fa-info-circle"></i> 最大 50MB，AI 将深度分析书籍核心内容</div>
+                <div class="format-hint"><i class="fas fa-info-circle"></i> <span data-i18n="formatHint">最大 50MB，AI 将深度分析书籍核心内容</span></div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-primary" id="analyzeBtn"><i class="fas fa-magic"></i> 开始分析</button>
-                <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> 重置</button>
+                <button class="btn btn-primary" id="analyzeBtn"><i class="fas fa-magic"></i> <span data-i18n="analyzeBtn">开始分析</span></button>
+                <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> <span data-i18n="resetBtn">重置</span></button>
             </div>
         </div>
 
         <div id="reportContainer" class="report-container" style="display: none;">
             <div class="report-header">
-                <h2><i class="fas fa-book-open"></i> 《<span id="bookTitle">未知书籍</span>》· Qing阅读分析报告</h2>
+                <h2><i class="fas fa-book-open"></i> 《<span id="bookTitle">未知书籍</span>》 · <span data-i18n="reportHeader">Qing阅读分析报告</span></h2>
             </div>
             <div id="analysisContent"></div>
             <div class="footer">
-                <i class="fas fa-brain"></i> 分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）
+                <i class="fas fa-brain"></i> <span data-i18n="footer">分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）</span>
             </div>
         </div>
     </div>
 
     <script>
+        const I18N = {
+            zh: {
+                pageTitle: '帮你读书 - Qing阅读分析法 | AI智能精读',
+                heroTitle: '📖 帮你读书',
+                badge: '⚡ 基于 DeepSeek AI + Qing阅读分析法 · 智能精读引擎',
+                heroSub: '上传书籍文档，AI 将严格按照 Qing 阅读分析法生成完整深度报告',
+                uploadPrompt: '点击或拖拽上传书籍文档',
+                formats: '支持 EPUB、文字版 PDF、TXT、Word、MOBI',
+                formatHint: '最大 50MB，AI 将深度分析书籍核心内容',
+                analyzeBtn: '开始分析',
+                resetBtn: '重置',
+                reportHeader: 'Qing阅读分析报告',
+                loading1: '🤖 AI 正在深度分析书籍内容，严格按照 Qing 阅读分析法生成报告...',
+                loading2: '两段式分析（先挑关键章节、再生成报告），约需 1-3 分钟，请耐心等待',
+                footer: '分析由 DeepSeek AI 驱动，严格遵循 Qing 阅读分析法（检视阅读→分析阅读→评论）',
+                needFile: '请先选择一本书籍文件',
+                badFormat: '暂支持 EPUB、文字版 PDF、TXT、Word 或 MOBI 文件',
+                selected: '已选择',
+                analyzeFail: '分析失败',
+                requestFail: '请求失败'
+            },
+            en: {
+                pageTitle: 'Help You Read - Qing Reading Analysis | AI Smart Reading',
+                heroTitle: '📖 Help You Read',
+                badge: '⚡ Powered by DeepSeek AI + Qing Reading Analysis',
+                heroSub: 'Upload a book and AI generates a full in-depth report following the Qing Reading Analysis method',
+                uploadPrompt: 'Click or drag to upload a book',
+                formats: 'Supports EPUB, text PDF, TXT, Word, MOBI',
+                formatHint: 'Up to 50MB, AI analyzes the core content of the book',
+                analyzeBtn: 'Analyze',
+                resetBtn: 'Reset',
+                reportHeader: 'Qing Reading Analysis Report',
+                loading1: '🤖 AI is analyzing the book following the Qing Reading Analysis method...',
+                loading2: 'Two-pass analysis (pick key chapters first, then generate report), takes 1-3 min',
+                footer: 'Driven by DeepSeek AI, following the Qing Reading Analysis (Inspectional → Analytical → Critical)',
+                needFile: 'Please select a book file first',
+                badFormat: 'Please upload EPUB, text PDF, TXT, Word or MOBI',
+                selected: 'Selected',
+                analyzeFail: 'Analysis failed',
+                requestFail: 'Request failed'
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'zh';
+        let selectedFile = null;
+
+        function t(key) {
+            return (I18N[currentLang] && I18N[currentLang][key]) || key;
+        }
+
+        function applyLang() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.getAttribute('data-i18n'));
+            });
+            document.title = t('pageTitle');
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.lang === currentLang);
+            });
+            if (selectedFile) {
+                fileNameDisplay.innerHTML = `✅ ${t('selected')}: ${selectedFile.name} (${(selectedFile.size / 1024).toFixed(1)} KB)`;
+            }
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                currentLang = b.dataset.lang;
+                localStorage.setItem('lang', currentLang);
+                applyLang();
+            });
+        });
+
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -304,8 +416,6 @@
         const reportContainer = document.getElementById('reportContainer');
         const bookTitleSpan = document.getElementById('bookTitle');
         const analysisContentDiv = document.getElementById('analysisContent');
-
-        let selectedFile = null;
 
         uploadArea.addEventListener('click', () => fileInput.click());
         uploadArea.addEventListener('dragover', (e) => {
@@ -328,14 +438,14 @@
         });
 
         function handleFile(file) {
-            const validExtensions = ['.epub', '.pdf'];
+            const validExtensions = ['.epub', '.pdf', '.txt', '.docx', '.mobi'];
             const ext = '.' + file.name.split('.').pop().toLowerCase();
             if (!validExtensions.includes(ext)) {
-                alert('暂支持 EPUB 或文字版 PDF（带书签）。TXT/Word/MOBI/扫描版 PDF 请先转换');
+                alert(t('badFormat'));
                 return;
             }
             selectedFile = file;
-            fileNameDisplay.innerHTML = `✅ 已选择: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            fileNameDisplay.innerHTML = `✅ ${t('selected')}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
         }
 
         resetBtn.addEventListener('click', () => {
@@ -347,7 +457,7 @@
 
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) {
-                alert('请先选择一本书籍文件');
+                alert(t('needFile'));
                 return;
             }
 
@@ -355,8 +465,8 @@
             analysisContentDiv.innerHTML = `
             <div class="loading">
                 <div class="loading-spinner"></div>
-                <p>🤖 AI 正在深度分析书籍内容，严格按照 Qing 阅读分析法生成报告...</p>
-                <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">两段式分析（先挑关键章节、再生成报告），约需 1-3 分钟，请耐心等待</p>
+                <p>${t('loading1')}</p>
+                <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">${t('loading2')}</p>
             </div>
         `;
             bookTitleSpan.innerText = selectedFile.name.replace(/\.[^/.]+$/, '');
@@ -372,18 +482,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // 将 Markdown 渲染为 HTML
                     const htmlContent = marked.parse(result.analysis);
                     analysisContentDiv.innerHTML = `<div class="analysis-content">${htmlContent}</div>`;
                 } else {
-                    analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> 分析失败: ${result.error}</div>`;
+                    analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${t('analyzeFail')}: ${result.error}</div>`;
                 }
             } catch (error) {
-                analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${error.message}</div>`;
+                analysisContentDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${t('requestFail')}: ${error.message}</div>`;
             }
         });
 
-        // Markdown 渲染由 marked 库处理（支持标题/列表/表格/引用块）
+        applyLang();
     </script>
 </body>
 

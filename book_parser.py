@@ -402,13 +402,148 @@ def parse_pdf(path):
 # 分发
 # ---------------------------------------------------------------------------
 
+def parse_txt(path):
+    """纯文本：按「第N章 / Chapter N」等标题切章，无标题则整本作一章。"""
+    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        text = f.read()
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+
+    re_ch = re.compile(
+        r'^(第\s*[0-9一二三四五六七八九十百千]+\s*[章课讲部分篇])'
+        r'|^(chapter\s+\d+|part\s+\d+|section\s+\d+)',
+        re.IGNORECASE,
+    )
+
+    chapters = {}
+    toc = []
+    cur_title = None
+    cur_parts = []
+    front = []
+
+    for line in text.split('\n'):
+        s = line.strip()
+        if re_ch.match(s):
+            if cur_title is not None:
+                chapters[cur_title] = '\n'.join(cur_parts)
+            cur_title = s
+            cur_parts = []
+            toc.append({'level': 1, 'title': cur_title, 'children': []})
+        elif cur_title is None:
+            front.append(line)
+        else:
+            cur_parts.append(line)
+
+    if cur_title is not None:
+        chapters[cur_title] = '\n'.join(cur_parts)
+
+    if not toc:
+        body = text.strip()
+        if body:
+            toc = [{'level': 1, 'title': '正文', 'children': []}]
+            chapters = {'正文': body}
+
+    return {
+        'title': os.path.splitext(os.path.basename(path))[0],
+        'author': '',
+        'publisher': '',
+        'preface': '\n'.join(front).strip()[:3000],
+        'toc': toc,
+        'chapters': chapters,
+    }
+
+
+def _docx_heading_level(style):
+    """把 Word 样式名映射为标题层级：0=正文，1=章，2=小节。"""
+    s = (style or '').lower()
+    if 'heading' in s or '标题' in s:
+        m = re.search(r'(\d+)', s)
+        return int(m.group(1)) if m else 1
+    return 0
+
+
+def parse_docx(path):
+    """Word：按标题样式（Heading 1/标题 1 = 章，Heading 2/标题 2 = 小节）重建目录。"""
+    try:
+        from docx import Document
+    except ImportError:
+        raise RuntimeError('解析 docx 需要 python-docx，请先安装：pip install python-docx')
+
+    doc = Document(path)
+    core = doc.core_properties
+
+    chapters = {}
+    toc = []
+    cur_title = None
+    cur_parts = []
+
+    for para in doc.paragraphs:
+        style = para.style.name if para.style else ''
+        text = para.text.strip()
+        if not text:
+            continue
+        lvl = _docx_heading_level(style)
+        if lvl == 1:
+            if cur_title is not None:
+                chapters[cur_title] = '\n'.join(cur_parts)
+                cur_parts = []
+            cur_title = text
+            toc.append({'level': 1, 'title': text, 'children': []})
+        elif lvl == 2 and cur_title is not None:
+            toc[-1]['children'].append(text)
+            cur_parts.append(text)
+        else:
+            cur_parts.append(text)
+
+    if cur_title is not None:
+        chapters[cur_title] = '\n'.join(cur_parts)
+
+    if not toc:
+        body = '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
+        if body:
+            toc = [{'level': 1, 'title': '正文', 'children': []}]
+            chapters = {'正文': body}
+
+    return {
+        'title': (core.title or '').strip() or os.path.splitext(os.path.basename(path))[0],
+        'author': (core.author or '').strip(),
+        'publisher': '',
+        'preface': '',
+        'toc': toc,
+        'chapters': chapters,
+    }
+
+
+def parse_mobi(path):
+    """MOBI/AZW：优先用 calibre 的 ebook-convert 转成 EPUB 再解析；无 calibre 则报错。"""
+    import subprocess
+    epub_path = path + '.epub'
+    try:
+        subprocess.run(['ebook-convert', path, epub_path],
+                       check=True, capture_output=True, timeout=180)
+    except FileNotFoundError:
+        raise RuntimeError('解析 mobi 需要 calibre（ebook-convert），服务器未安装，请先把 mobi 转成 EPUB')
+    except Exception as e:
+        raise RuntimeError(f'mobi 转 epub 失败：{e}')
+    try:
+        return parse_epub(epub_path)
+    finally:
+        if os.path.exists(epub_path):
+            os.remove(epub_path)
+
+
 def parse_book(path):
     ext = os.path.splitext(path)[1].lower()
     if ext == '.epub':
         return parse_epub(path)
     if ext == '.pdf':
         return parse_pdf(path)
-    raise ValueError(f'暂不支持的格式：{ext}（当前支持 .epub 与文字版 .pdf）')
+    if ext == '.txt':
+        return parse_txt(path)
+    if ext == '.docx':
+        return parse_docx(path)
+    if ext in ('.mobi', '.azw3', '.azw'):
+        return parse_mobi(path)
+    raise ValueError(f'暂不支持的格式：{ext}')
 
 
 # ---------------------------------------------------------------------------
